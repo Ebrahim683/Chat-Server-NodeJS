@@ -1,0 +1,36 @@
+generator client {
+  provider           = "prisma-client-js"
+  previewFeatures    = ["extendedWhereUnique"]
+  datasourcesTimeout = 10000
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(uuid()) @db.Uuid
+  name            String    @db.VarChar(255)
+  email           String    @unique @db.VarChar(255)
+  password        String    @unique @db.VarChar(255)
+  image           String?
+  created_at      DateTime  @default(now())
+  messageSent     Message[] @relation("SenderMessages")
+  messageReceived Message[] @relation("ReceiverMessages")
+
+  @@map("users")
+}
+
+model Message {
+  id          String   @id @default(uuid()) @db.Uuid
+  message     String   @db.VarChar(255)
+  sender_id   String   @db.Uuid
+  receiver_id String   @db.Uuid
+  sender      User     @relation("SenderMessages", fields: [sender_id], references: [id])
+  receiver    User     @relation("ReceiverMessages", fields: [receiver_id], references: [id])
+  created_at  DateTime @default(now())
+  userId      Int?
+
+  @@map("message")
+}
